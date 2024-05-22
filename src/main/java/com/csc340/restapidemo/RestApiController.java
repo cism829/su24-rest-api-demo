@@ -110,7 +110,7 @@ public class RestApiController {
      *
      * @return The quote json response
      */
-    @GetMapping("/quote")
+    @GetMapping("students/quote")
     public Object getQuote() {
         try {
             String url = "https://api.quotable.io/random";
@@ -142,7 +142,33 @@ public class RestApiController {
      *
      * @return json array
      */
-    @GetMapping("/univ")
+
+    @GetMapping("students/cats")
+    public Object getZelda(){
+        try {
+            String url = "https://meowfacts.herokuapp.com/";
+            RestTemplate restTemplate = new RestTemplate();
+            ObjectMapper mapper = new ObjectMapper();
+
+            String jsonListResponse = restTemplate.getForObject(url, String.class);
+            JsonNode root = mapper.readTree(jsonListResponse);
+
+            String theCategory = root.get("data").asText();
+
+            System.out.println("data: " + theCategory);
+
+
+
+
+            return root;
+
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(RestApiController.class.getName()).log(Level.SEVERE,
+                    null, ex);
+            return "error in /zelda";
+        }
+    }
+    @GetMapping("students/univ")
     public Object getUniversities() {
         try {
             String url = "http://universities.hipolabs.com/search?name=sports";

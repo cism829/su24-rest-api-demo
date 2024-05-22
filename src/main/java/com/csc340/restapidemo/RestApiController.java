@@ -1,12 +1,15 @@
 package com.csc340.restapidemo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.*;
 import java.util.HashMap;
+import java.util.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +18,8 @@ import java.util.logging.Logger;
 public class RestApiController {
 
     Map<Integer, Student> studentDatabase = new HashMap<>();
+    ObjectMapper mapper = new ObjectMapper();
+    File file  = new File("student-data.txt");
 
     /**
      * Hello World API endpoint.
@@ -45,9 +50,13 @@ public class RestApiController {
      */
     @GetMapping("students/all")
     public Object getAllStudents() {
+        existData();
+
         if (studentDatabase.isEmpty()) {
-            studentDatabase.put(1, new Student(1, "sample1", "csc", 3.86));
+            studentDatabase.put(1, new Student(1, "sample1", "csc", 3.15));
         }
+        writeJFileL();
+
         return studentDatabase.values();
     }
 
@@ -59,6 +68,7 @@ public class RestApiController {
      */
     @GetMapping("students/{id}")
     public Student getStudentById(@PathVariable int id) {
+
         return studentDatabase.get(id);
     }
 
@@ -72,6 +82,7 @@ public class RestApiController {
     @PostMapping("students/create")
     public Object createStudent(@RequestBody Student student) {
         studentDatabase.put(student.getId(), student);
+        writeJFileL();
         return studentDatabase.values();
     }
 
@@ -84,9 +95,16 @@ public class RestApiController {
     @DeleteMapping("students/delete/{id}")
     public Object deleteStudent(@PathVariable int id) {
         studentDatabase.remove(id);
+        writeJFileL();
         return studentDatabase.values();
     }
 
+    @PutMapping("students/update/{id}")
+    public Object updateData(@PathVariable int id, @RequestBody Student student ){
+        studentDatabase.put(id, student);
+        writeJFileL();
+        return studentDatabase.values();
+    }
     /**
      * Get a quote from quotable and make it available our own API endpoint
      *
@@ -150,4 +168,35 @@ public class RestApiController {
         }
 
     }
-}
+
+    public void writeJFileL(){
+        try {
+            mapper.writeValue(file, studentDatabase.values());
+        } catch (IOException e) {
+            System.out.println("writing didnt work");;
+        }
+
+    }
+    public void existData(){
+        try {
+
+            TypeReference<List<Student>> typeReference = new TypeReference<List<Student>>() {};
+            List<Student> data = mapper.readValue(file, typeReference);
+
+            for (Student stu : data) {
+                studentDatabase.put(stu.getId(), stu);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading JSON file: " + e.getMessage());
+        }
+        }
+
+    }
+
+
+
+
+
+
+
+
